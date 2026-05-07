@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f0e8;
+  --foreground: #102033;
+  --color-cream: #f6f0e8;
+  --color-ink: #102033;
+  --color-rust: #df6842;
+  --color-sand: #f2dfc8;
+  --color-mist: #dbe7e7;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at top right, rgba(223, 104, 66, 0.14), transparent 24%),
+    radial-gradient(circle at left 20%, rgba(16, 32, 51, 0.06), transparent 26%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+a,
+button {
+  transition:
+    transform 160ms ease,
+    opacity 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.hero-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+    align-items: stretch;
+  }
+}
