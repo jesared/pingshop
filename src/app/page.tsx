@@ -125,6 +125,14 @@ export default async function Home() {
                 <p className="text-sm leading-7 text-[color:rgba(16,32,51,0.7)]">
                   {collection.description || "Ajoute une description de collection dans Shopify pour nourrir cette carte."}
                 </p>
+                <div className="pt-2">
+                  <Link
+                    href={`/collections/${collection.handle}`}
+                    className="inline-flex rounded-full bg-[var(--color-ink)] px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5"
+                  >
+                    Explorer la collection
+                  </Link>
+                </div>
               </div>
             </article>
           ))}

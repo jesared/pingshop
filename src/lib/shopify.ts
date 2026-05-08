@@ -92,6 +92,15 @@ type ProductPageData = {
   error?: string;
 };
 
+export type CollectionPageData = {
+  mode: "demo" | "live";
+  shopName: string;
+  collection: StorefrontCollection;
+  products: StorefrontProduct[];
+  availableTags: string[];
+  error?: string;
+};
+
 type RawProductNode = {
   id: string;
   title: string;
@@ -384,6 +393,55 @@ const PRODUCT_PAGE_QUERY = /* GraphQL */ `
   }
 `;
 
+const COLLECTION_PAGE_QUERY = /* GraphQL */ `
+  query StorefrontCollectionPage($handle: String!) {
+    shop {
+      name
+    }
+    collection(handle: $handle) {
+      id
+      title
+      handle
+      description
+      image {
+        url
+        altText
+      }
+      products(first: 48) {
+        nodes {
+          id
+          title
+          handle
+          description
+          tags
+          availableForSale
+          featuredImage {
+            url
+            altText
+          }
+          priceRange {
+            minVariantPrice {
+              amount
+              currencyCode
+            }
+          }
+          variants(first: 1) {
+            nodes {
+              id
+              title
+              availableForSale
+              selectedOptions {
+                name
+                value
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 const CART_QUERY = /* GraphQL */ `
   query StorefrontCart($id: ID!) {
     cart(id: $id) {
@@ -580,6 +638,25 @@ export function getStorefrontSetup() {
   };
 }
 
+function getDemoCollectionProducts(handle: string) {
+  switch (handle) {
+    case "bois-offensifs":
+      return [sampleProducts[0]];
+    case "revetements":
+      return [sampleProducts[1]];
+    case "textiles-club":
+      return [sampleProducts[2]];
+    default:
+      return sampleProducts;
+  }
+}
+
+function buildAvailableTags(products: StorefrontProduct[]) {
+  return Array.from(new Set(products.flatMap((product) => product.tags)))
+    .filter(Boolean)
+    .sort((left, right) => left.localeCompare(right, "fr"));
+}
+
 export async function getHomePageData(): Promise<HomePageData> {
   if (!isConfigured()) {
     return {
@@ -673,6 +750,67 @@ export async function getProductPageData(handle: string): Promise<ProductPageDat
       mode: "demo",
       shopName: "TestBoutique Sport",
       product: fallbackProduct,
+      error: error instanceof Error ? error.message : "Unknown Shopify error.",
+    };
+  }
+}
+
+export async function getCollectionPageData(handle: string): Promise<CollectionPageData> {
+  const fallbackCollection =
+    sampleCollections.find((collection) => collection.handle === handle) ?? sampleCollections[0];
+  const fallbackProducts = getDemoCollectionProducts(handle);
+
+  if (!isConfigured()) {
+    return {
+      mode: "demo",
+      shopName: "TestBoutique Sport",
+      collection: fallbackCollection,
+      products: fallbackProducts,
+      availableTags: buildAvailableTags(fallbackProducts),
+    };
+  }
+
+  try {
+    const data = await storefrontFetch<{
+      shop: {
+        name: string;
+      };
+      collection: (StorefrontCollection & { products: { nodes: RawProductNode[] } }) | null;
+    }>(COLLECTION_PAGE_QUERY, { handle });
+
+    if (!data.collection) {
+      return {
+        mode: "demo",
+        shopName: data.shop.name,
+        collection: fallbackCollection,
+        products: fallbackProducts,
+        availableTags: buildAvailableTags(fallbackProducts),
+        error: `Collection "${handle}" not found in Shopify.`,
+      };
+    }
+
+    const products = data.collection.products.nodes.map(mapProduct);
+
+    return {
+      mode: "live",
+      shopName: data.shop.name,
+      collection: {
+        id: data.collection.id,
+        title: data.collection.title,
+        handle: data.collection.handle,
+        description: data.collection.description,
+        image: data.collection.image,
+      },
+      products,
+      availableTags: buildAvailableTags(products),
+    };
+  } catch (error) {
+    return {
+      mode: "demo",
+      shopName: "TestBoutique Sport",
+      collection: fallbackCollection,
+      products: fallbackProducts,
+      availableTags: buildAvailableTags(fallbackProducts),
       error: error instanceof Error ? error.message : "Unknown Shopify error.",
     };
   }
