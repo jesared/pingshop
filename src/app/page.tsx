@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { formatPrice, getHomePageData, getStorefrontSetup } from "@/lib/shopify";
 
 function shouldBypassImageOptimization(url: string) {
@@ -139,7 +140,7 @@ export default async function Home() {
             </div>
             <p className="max-w-xl text-sm leading-7 text-[var(--color-sand)]">
               Cette base te permet de brancher les vrais produits Shopify, puis d&apos;ajouter search, cart drawer, filters
-              et checkout externe sans revenir a Liquid.
+              et checkout sans revenir a Liquid.
             </p>
           </div>
 
@@ -175,12 +176,20 @@ export default async function Home() {
                   <p className="mt-3 flex-1 text-sm leading-7 text-[color:rgba(16,32,51,0.72)]">{product.description}</p>
                   <div className="mt-6 flex items-center justify-between gap-4">
                     <p className="text-xl font-semibold">{formatPrice(product.price)}</p>
-                    <Link
-                      href={`/products/${product.handle}`}
-                      className="rounded-full bg-[var(--color-rust)] px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5"
-                    >
-                      Voir la fiche
-                    </Link>
+                    <div className="flex flex-wrap justify-end gap-3">
+                      <AddToCartButton
+                        merchandiseId={data.mode === "live" ? product.variantId : null}
+                        availableForSale={data.mode === "live" && product.availableForSale}
+                        label="Ajouter"
+                        className="rounded-full bg-[var(--color-ink)] px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+                      />
+                      <Link
+                        href={`/products/${product.handle}`}
+                        className="rounded-full bg-[var(--color-rust)] px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5"
+                      >
+                        Voir la fiche
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </article>
@@ -217,8 +226,8 @@ SHOPIFY_STOREFRONT_API_VERSION=${setup.apiVersion}`}</pre>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-rust)]">Suite logique</p>
             <ul className="mt-5 space-y-4 text-sm leading-7 text-[color:rgba(16,32,51,0.78)]">
               <li>Ajouter une vraie page collection avec filtres et tri.</li>
-              <li>Brancher un panier headless avec Shopify Storefront Cart API.</li>
-              <li>Pointer les CTA checkout vers Shopify pendant la phase 1.</li>
+              <li>Enrichir le panier headless avec codes promo et estimations de livraison.</li>
+              <li>Pointer le checkout vers Shopify pendant la phase 1, puis enrichir l&apos;apres-achat.</li>
               <li>Reprendre ton inspiration visuelle et la transformer en systeme de composants React.</li>
             </ul>
           </article>

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { formatPrice, getProductPageData } from "@/lib/shopify";
 
 function shouldBypassImageOptimization(url: string) {
@@ -52,6 +53,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <p className="mt-5 text-2xl font-semibold">{formatPrice(product.price)}</p>
             <p className="mt-5 text-base leading-8 text-[color:rgba(16,32,51,0.74)]">{product.description}</p>
 
+            <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-[color:rgba(16,32,51,0.66)]">
+              <span className="rounded-full bg-[var(--color-mist)] px-3 py-1 font-semibold uppercase tracking-[0.16em] text-[var(--color-rust)]">
+                {product.availableForSale ? "En stock" : "Indisponible"}
+              </span>
+              {product.variantTitle && product.variantTitle !== "Default Title" ? <span>{product.variantTitle}</span> : null}
+            </div>
+
             <div className="mt-6 flex flex-wrap gap-2">
               {product.tags.map((tag) => (
                 <span
@@ -65,16 +73,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <div className="mt-8 grid gap-4 rounded-[1.5rem] bg-[var(--color-mist)] p-5 text-sm leading-7 text-[color:rgba(16,32,51,0.72)]">
               <p>Front produit React, sans compromis sur le layout ni sur la hierarchie visuelle.</p>
-              <p>Phase suivante conseillee : connecter le bouton panier a la Cart API Shopify.</p>
+              <p>Le panier headless dialogue deja avec Shopify et garde le checkout natif pour la conversion.</p>
             </div>
 
             <div className="mt-8 flex flex-wrap gap-4">
-              <a
-                href="https://misterping.myshopify.com/cart"
-                className="rounded-full bg-[var(--color-ink)] px-6 py-3 font-semibold text-white transition hover:-translate-y-0.5"
-              >
-                Checkout Shopify
-              </a>
+              <AddToCartButton
+                merchandiseId={data.mode === "live" ? product.variantId : null}
+                availableForSale={data.mode === "live" && product.availableForSale}
+                className="rounded-full bg-[var(--color-ink)] px-6 py-3 font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+              />
               <Link
                 href="/"
                 className="rounded-full border border-black/10 px-6 py-3 font-semibold transition hover:bg-black/5"
